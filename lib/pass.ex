@@ -1,0 +1,2 @@
+defmodule Pass do
+end
