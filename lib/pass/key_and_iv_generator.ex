@@ -26,14 +26,14 @@ defmodule Pass.KeyAndIvGenerator do
     line_1 = Base.decode64!(line_1)
 
     <<
-      _   :: binary-size(@magic_keyword_length),
-      salt:: binary-size(8),
-      _:: binary
+      _    :: binary-size(@magic_keyword_length),
+      salt :: binary-size(8),
+      _    :: binary
     >> = line_1
 
     <<
-      _   :: binary-size(@magic_keyword_length),
-      _:: binary-size(8),
+      _        :: binary-size(@magic_keyword_length),
+      _        :: binary-size(8),
       encrypted:: binary
     >> = decode(contents)
 
