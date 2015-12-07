@@ -12,8 +12,7 @@ defmodule Pass.KeyAndIvGenerator do
   @magic_keyword "Salted__"
   @magic_keyword_length byte_size @magic_keyword
 
-  def from_file(filename, password, key_size \\ 32, iv_size \\ 16) do
-    contents = File.read!(filename)
+  def run(contents, password, key_size \\ 32, iv_size \\ 16) do
     {salt, encrypted} = separate_salt(contents)
 
     {key, iv} = key_and_iv(password, salt, key_size, iv_size)

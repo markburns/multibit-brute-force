@@ -1,10 +1,10 @@
 defmodule Pass.Decrypt do
-  def run(encrypted_filename, password) do
-    decrypt(encrypted_filename, password)
+  def run(encrypted_contents, password) do
+    decrypt(encrypted_contents, password)
   end
 
-  def decrypt(encrypted_filename, password) do
-    case Pass.KeyAndIvGenerator.from_file(encrypted_filename, password) do
+  def decrypt(encrypted_contents, password) do
+    case Pass.KeyAndIvGenerator.run(encrypted_contents, password) do
       {_, key, iv, encrypted} -> decrypt(key, iv, encrypted)
 
       message                  -> IO.puts(message); {:error, message}

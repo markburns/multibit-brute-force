@@ -1,8 +1,10 @@
 defmodule Pass.BruteForce do
   def run(encrypted_filename, recovered_filename, passwords_file) do
+    encrypted_contents = File.read! encrypted_filename
+
     try do
       File.stream!(passwords_file, [])
-      |> Pass.Parallel.map &(try_password(encrypted_filename, recovered_filename, &1))
+      |> Pass.Parallel.map &(try_password(encrypted_contents, recovered_filename, &1))
     catch
       :exit -> IO.puts("Found password"); {:ok, "password"}
       value ->  value
@@ -10,9 +12,9 @@ defmodule Pass.BruteForce do
     end
   end
 
-  def try_password(encrypted_filename, recovered_filename, password) do
+  def try_password(encrypted_contents, recovered_filename, password) do
     password = String.rstrip(password)
-    result = Pass.Decrypt.run encrypted_filename, recovered_filename, password
+    result = Pass.Decrypt.run encrypted_contents, password
 
     case result do
       {:ok, contents} -> File.write("#{recovered_filename}-found", contents); exit(password)
