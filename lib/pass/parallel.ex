@@ -3,8 +3,8 @@ defmodule Pass.Parallel do
   Parallelizes the calculation of `fun` mapped over `collection`
 
   ## Examples
-      iex> Pass.Parallel.map([1,2],&(&1 +2))
-      [3,4]
+    iex> Pass.Parallel.map([1,2], fn({e, _})-> e + 2 end)
+    [3,4]
   """
 
   def map(collection, fun) do
@@ -16,11 +16,11 @@ defmodule Pass.Parallel do
   defp parallelize(list, me, fun) do
     list
     |> Stream.with_index
-    |> Stream.map &(calculate_individual(&1, me, fun))
+    |> Stream.map &(calculate_individual(me, fun, &1))
   end
 
-  defp calculate_individual({elem, index}, me, fun) do
-    spawn_link fn -> send(me, {self, fun.(elem)}) end
+  defp calculate_individual(me, fun, function_args) do
+    spawn_link fn -> send(me, {self, fun.(function_args)}) end
   end
 
   defp collate_results list do

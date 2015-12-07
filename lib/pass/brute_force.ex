@@ -12,7 +12,7 @@ defmodule Pass.BruteForce do
     end
   end
 
-  def try_password(encrypted_contents, password) do
+  def try_password(encrypted_contents, {password, index}) do
     password = String.rstrip(password)
     result = Pass.Decrypt.run encrypted_contents, password
 
