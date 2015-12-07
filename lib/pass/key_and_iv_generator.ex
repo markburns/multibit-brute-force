@@ -1,14 +1,4 @@
 defmodule Pass.KeyAndIvGenerator do
-  @doc """
-    iex> {salt, key, iv, encrypted } = Pass.KeyAndIvGenerator.from_file "./test/support/empty-with-password.key", "password"
-    iex> Base.encode16(salt)
-    "5DED47FA287C8CC8"
-    iex> Base.encode16(key)
-    "5B4592909B724DAF300BC32CD247F94D8AB3A4F12F0CF098E5AA74ECA7B28012"
-    iex> Base.encode16(iv)
-    "344BC81AE09EED238652D052D822FE4C"
-  """
-
   @magic_keyword "Salted__"
   @magic_keyword_length byte_size @magic_keyword
 
@@ -21,37 +11,39 @@ defmodule Pass.KeyAndIvGenerator do
   end
 
   def separate_salt(contents) do
-    #FIXME: can't seem to extract salt from concatenated lines, only line_1
-    [line_1, _, _] = contents |> String.split("\r\n")
-    line_1 = Base.decode64!(line_1)
+    salt      =      salt_from(contents)
+    encrypted = encrypted_from(contents)
 
-    <<
-      _    :: binary-size(@magic_keyword_length),
-      salt :: binary-size(8),
-      _    :: binary
-    >> = line_1
-
-    <<
-      _        :: binary-size(@magic_keyword_length),
-      _        :: binary-size(8),
-      encrypted:: binary
-    >> = decode(contents)
-
-
-    encrypted = Base.decode64!(encrypted)
     {salt, encrypted}
   end
 
+  def salt_from(contents) do
+    #FIXME: can't seem to extract salt from concatenated lines, only line_1
+    [line_1, _, _] =  contents |> String.split("\r\n")
 
+    line_1 = Base.decode64!(line_1)
 
-  defp decode(contents) do
-    contents
-    |> String.replace "\r\n", ""
-    |> Base.decode64!
+    <<
+    _    :: binary-size(@magic_keyword_length),
+    salt :: binary-size(8),
+    _    :: binary
+    >> = line_1
+    salt
   end
 
+  def encrypted_from(contents) do
+    decoded = contents |> String.replace("\r\n", "") |> Base.decode64!
 
-  def key_and_iv(password, salt, key_size, iv_size) do
+    <<
+    _         :: binary-size(@magic_keyword_length),
+    _         :: binary-size(8),
+    encrypted :: binary
+    >> = decoded
+
+    encrypted
+  end
+
+  def key_and_iv(password, salt, key_size \\ 32, iv_size \\ 16) do
     hash = _hash_to_length(password, salt, key_size*2, "", "")
 
     {

@@ -1,23 +1,32 @@
 defmodule Pass.Decrypt do
-  def run(encrypted_contents, password) do
-    decrypt(encrypted_contents, password)
-  end
 
-  def decrypt(encrypted_contents, password) do
+  def run(encrypted_contents, password) do
     case Pass.KeyAndIvGenerator.run(encrypted_contents, password) do
       {_, key, iv, encrypted} -> decrypt(key, iv, encrypted)
-
-      message                  -> IO.puts(message); {:error, message}
+      {:error, message}       -> {:error, message}
     end
+  rescue
+    error ->
+      {:error, "Couldn't decrypt bytes: #{inspect error}"}
   end
 
   def decrypt(key, iv, encrypted) do
-    IO.inspect "key: #{key}"
-    IO.inspect "iv: #{iv}"
-    IO.inspect "encrypted: #{encrypted}"
-    result = :crypto.aes_cbc_256_decrypt(key, iv, encrypted)
+    result = unpad(:crypto.aes_cbc_256_decrypt(key, iv, encrypted))
 
-    IO.inspect result
-    result
+    {:ok, result}
+  rescue
+    message ->
+      encrypted = encrypted |> Base.encode16
+      {:error, "Couldn't decrypt bytes #{inspect message} #{encrypted}"}
+  end
+
+  def unpad(binary) do
+    case  String.printable?(binary)  do
+      true -> binary
+
+      false ->
+        <<last>> = String.last(binary)
+        String.rstrip(binary, last)
+    end
   end
 end

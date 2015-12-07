@@ -21,7 +21,7 @@ U2FsdGVkX19d7Uf6KHyMyAdbSkNiaqwA7o6LT5hhe45i+bv1v6lT1xiUEhhWs30QzKzHm4ooqT0x
 KOeB9aQcQBVJ8QRRp+iycWimKJ72tAKiczcQf6BzYLkmxPsKJYw5
 
 U2FsdGVkX19d7Uf6KHyMyAdbSkNiaqwA7o6LT5hhe45i+bv1v6lT1xiUEhhWs30QzKzHm4ooqT0x
-57 bytes: 
+57 bytes:
 <<83, 97, 108, 116, 101, 100, 95, 95, 93, 237, 71, 250, 40, 124, 140, 200, 7,
   91, 74, 67, 98, 106, 172, 0, 238, 142, 139, 79, 152, 97, 123, 142, 98, 249,
   187, 245, 191, 169, 83, 215, 24, 148, 18, 24, 86, 179, 125, 16, 204, 172,
@@ -33,3 +33,16 @@ KOeB9aQcQBVJ8QRRp+iycWimKJ72tAKiczcQf6BzYLkmxPsKJYw5
    166, 40, 158, 246, 180, 2, 162, 115, 55, 16, 127, 160, 115, 96, 185, 38,
    196, 251, 10, 37, 140, 57>>
 
+
+
+pool of worker process
+  pulling off a queue
+  your queue module
+    could return :stop or task_data when dequeueing as password attempt.
+
+when a password is found
+  the worker can notify the queue
+pool spawned by a supervision tree
+  when the password is found,
+    print it out,
+    the shut down the tree
