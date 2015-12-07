@@ -15,10 +15,11 @@ defmodule Pass.Parallel do
 
   defp parallelize(list, me, fun) do
     list
-    |> Enum.map &(calculate_individual(&1, me, fun))
+    |> Stream.with_index
+    |> Stream.map &(calculate_individual(&1, me, fun))
   end
 
-  defp calculate_individual(elem, me, fun) do
+  defp calculate_individual({elem, index}, me, fun) do
     spawn_link fn -> send(me, {self, fun.(elem)}) end
   end
 
