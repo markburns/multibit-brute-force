@@ -41,37 +41,35 @@ defmodule Pass.Parallel do
       IO.puts "trying password: #{inspect el}"
       IO.puts "completed: #{index} / #{total}"
 
-      IO.puts inspect(total)
-      IO.puts inspect(index / total)
-
       percent = 100.0 * index / total
       IO.puts "#{inspect percent}%"
 
-      now = Date.now
-      time_diff = Date.diff now, start_time, :secs
-      time_diff = if time_diff == 0 do
-        1
-      else
-        time_diff
-      end
+      time_diff = time_diff_from(start_time)
 
-      IO.puts time_diff
-
-      percent_per_second = percent / time_diff
-      percent_per_second = if percent_per_second == 0 do
-        1
-      else
-        percent_per_second
-      end
-      diff = Time.to_timestamp((100.0 / percent_per_second), :secs)
-      eta = Date.add now, diff
-      formatted_date = eta |> DateFormat.format!("%a, %d %b %Y %H:%M:%S", :strftime)
-
-      IO.puts "ETA: #{formatted_date}"
-
+      IO.puts "ETA: #{formatted_date(percent, time_diff)}"
     end
   end
 
+  defp time_diff_from(start_time) do
+    time_diff = Date.diff Date.now, start_time, :secs
+    time_diff = if time_diff == 0 do
+      1
+    else
+      time_diff
+    end
+  end
+
+  defp formatted_date percent, time_diff do
+    percent_per_second = percent / time_diff
+    percent_per_second = if percent_per_second == 0 do
+      1
+    else
+      percent_per_second
+    end
+    diff = Time.to_timestamp((100.0 / percent_per_second), :secs)
+    eta = Date.add Date.now, diff
+    eta |> DateFormat.format!("%a, %d %b %Y %H:%M:%S", :strftime)
+  end
   defp calculate_individual(me, fun, function_args) do
     spawn_link fn -> send(me, {self, fun.(function_args)}) end
   end
