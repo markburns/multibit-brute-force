@@ -37,7 +37,7 @@ defmodule Pass.Parallel do
 
 
   defp display({el, index}, total, start_time) do
-    if (rem(index, 10) == 0) do
+    if (rem(index, 1000) == 0) do
       IO.puts "trying password: #{inspect el}"
       IO.puts "completed: #{index} / #{total}"
 
@@ -60,14 +60,13 @@ defmodule Pass.Parallel do
   end
 
   defp formatted_date percent, time_diff do
-    percent_per_second = percent / time_diff
-    percent_per_second = if percent_per_second == 0 do
-      1
+    seconds_per_percent = if percent == 0 do
+      0
     else
-      percent_per_second
+      time_diff / percent
     end
 
-    diff = Time.to_timestamp((100.0 / percent_per_second), :secs)
+    diff = Time.to_timestamp((100.0 * seconds_per_percent), :secs)
 
     Date.now
     |> Date.add(diff)

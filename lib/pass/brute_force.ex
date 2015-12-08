@@ -7,6 +7,7 @@ defmodule Pass.BruteForce do
 
     try do
       File.stream!(passwords_file, [])
+      |> Stream.map(&(String.rstrip(&1)))
       |> Pass.Parallel.map &(try_password(encrypted_contents, &1)), total_passwords
 
       {:error, "No valid password found"}
@@ -37,7 +38,6 @@ defmodule Pass.BruteForce do
   end
 
   def try_password(encrypted_contents, {password, _}) do
-    password = String.rstrip(password)
     result = Pass.Decrypt.run encrypted_contents, password
 
     case result do
