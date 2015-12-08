@@ -1,4 +1,12 @@
-%{"concrypt": {:git, "git://github.com/stocks29/concrypt.git", "8ebd9c0da8fb3748dd3a7894e1a013c1ae2bc9fc", []},
+%{"certifi": {:hex, :certifi, "0.3.0"},
+  "combine": {:hex, :combine, "0.6.0"},
+  "concrypt": {:git, "git://github.com/stocks29/concrypt.git", "8ebd9c0da8fb3748dd3a7894e1a013c1ae2bc9fc", []},
+  "hackney": {:hex, :hackney, "1.4.7"},
+  "idna": {:hex, :idna, "1.0.2"},
   "key_generator": {:git, "https://github.com/DisruptiveMind/elixir-pbkdf2.git", "c48745218bfe0fb45c54ca063ddbdbcf599a5f60", []},
+  "mimerl": {:hex, :mimerl, "1.0.2"},
   "pkcs7": {:git, "https://github.com/camshaft/pkcs7.erl.git", "00218999ce9b60848aa1f36612248d1079c7ef06", []},
-  "rncryptor": {:git, "git://github.com/RNCryptor/RNCryptor-erlang.git", "1f6da88b4d2e4f7a49eb4256be43e1a91aa7004a", []}}
+  "rncryptor": {:git, "git://github.com/RNCryptor/RNCryptor-erlang.git", "1f6da88b4d2e4f7a49eb4256be43e1a91aa7004a", []},
+  "ssl_verify_hostname": {:hex, :ssl_verify_hostname, "1.0.5"},
+  "timex": {:hex, :timex, "1.0.0-rc3"},
+  "tzdata": {:hex, :tzdata, "0.5.5"}}

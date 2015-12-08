@@ -1,4 +1,6 @@
 defmodule Pass.Parallel do
+  use Timex
+
   @doc ~S"""
   Parallelizes the calculation of `fun` mapped over `collection`
 
@@ -20,10 +22,10 @@ defmodule Pass.Parallel do
   end
 
 
-  defp parallelize(list, me, fun, total) do
+  defp parallelize(list, me, fun, total, start_time \\ Date.now(:secs)) do
     list
     |> Stream.with_index
-    |> display(total)
+    |> display(total, start_time)
     |> Stream.map &(calculate_individual(me, fun, &1))
   end
 
@@ -34,14 +36,29 @@ defmodule Pass.Parallel do
   end
 
 
-  defp display(stream, total) do
+  defp display(stream, total, start_time) do
     {el, index} = Stream.take(stream, 1) |> Enum.to_list |> List.first
 
     if rem(index, 1000) == 0 do
-      IO.puts inspect el
-      IO.puts "#{index} / #{total}"
       percent = 100.0 * index / total
+
+      IO.puts inspect el
+      IO.puts "completed: #{index} / #{total}"
       IO.puts "#{inspect percent}%"
+
+      now = Date.now(:secs)
+      time_diff = now - start_time
+
+      if time_diff > 0 do
+        IO.puts time_diff
+
+        percent_per_second = percent / time_diff
+        eta = now + (100.0 / percent_per_second)
+        formatted_date = eta |> DateFormat.format("%a, %d %b %Y %H:%M:%S", :strftime)
+
+        IO.puts "ETA: #{formatted_date}"
+      end
+
     end
 
     stream
