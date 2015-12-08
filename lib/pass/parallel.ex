@@ -66,10 +66,14 @@ defmodule Pass.Parallel do
     else
       percent_per_second
     end
+
     diff = Time.to_timestamp((100.0 / percent_per_second), :secs)
-    eta = Date.add Date.now, diff
-    eta |> DateFormat.format!("%a, %d %b %Y %H:%M:%S", :strftime)
+
+    Date.now
+    |> Date.add(diff)
+    |> DateFormat.format!("%H:%M:%S, %a, %d %b %Y", :strftime)
   end
+
   defp calculate_individual(me, fun, function_args) do
     spawn_link fn -> send(me, {self, fun.(function_args)}) end
   end
