@@ -22,11 +22,11 @@ defmodule Pass.Parallel do
   end
 
 
-  defp parallelize(list, me, fun, total, start_time \\ Date.now(:secs)) do
+  defp parallelize(list, me, fun, total, start_time \\ Date.now) do
     list
     |> Stream.with_index
-    |> display(total, start_time)
-    |> Stream.map &(calculate_individual(me, fun, &1))
+    |> Stream.each(&(display(&1, total, start_time)))
+    |> Stream.map(&(calculate_individual(me, fun, &1)))
   end
 
   defp parallelize(list, me, fun) do
@@ -36,32 +36,40 @@ defmodule Pass.Parallel do
   end
 
 
-  defp display(stream, total, start_time) do
-    {el, index} = Stream.take(stream, 1) |> Enum.to_list |> List.first
-
-    if rem(index, 1000) == 0 do
-      percent = 100.0 * index / total
-
-      IO.puts inspect el
+  defp display({el, index}, total, start_time) do
+    if (rem(index, 10) == 0) do
+      IO.puts "trying password: #{inspect el}"
       IO.puts "completed: #{index} / #{total}"
+
+      IO.puts inspect(total)
+      IO.puts inspect(index / total)
+
+      percent = 100.0 * index / total
       IO.puts "#{inspect percent}%"
 
-      now = Date.now(:secs)
-      time_diff = now - start_time
-
-      if time_diff > 0 do
-        IO.puts time_diff
-
-        percent_per_second = percent / time_diff
-        eta = now + (100.0 / percent_per_second)
-        formatted_date = eta |> DateFormat.format("%a, %d %b %Y %H:%M:%S", :strftime)
-
-        IO.puts "ETA: #{formatted_date}"
+      now = Date.now
+      time_diff = Date.diff now, start_time, :secs
+      time_diff = if time_diff == 0 do
+        1
+      else
+        time_diff
       end
 
-    end
+      IO.puts time_diff
 
-    stream
+      percent_per_second = percent / time_diff
+      percent_per_second = if percent_per_second == 0 do
+        1
+      else
+        percent_per_second
+      end
+      diff = Time.to_timestamp((100.0 / percent_per_second), :secs)
+      eta = Date.add now, diff
+      formatted_date = eta |> DateFormat.format!("%a, %d %b %Y %H:%M:%S", :strftime)
+
+      IO.puts "ETA: #{formatted_date}"
+
+    end
   end
 
   defp calculate_individual(me, fun, function_args) do

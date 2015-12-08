@@ -16,6 +16,7 @@ defmodule Pass.CLI do
 
     case parse do
       { [help: true], _,_} -> :help
+      { _,  [encrypted_key_file, passwords_file, num_passwords],  _ } -> {encrypted_key_file, passwords_file , String.to_integer(num_passwords)}
       { _,  [encrypted_key_file, passwords_file],  _ } -> {encrypted_key_file, passwords_file }
       _ -> :help
     end
@@ -23,7 +24,7 @@ defmodule Pass.CLI do
 
   def process(:help) do
     IO.puts """
-    usage: pass <encrypted_key_file> <passwords_file>
+    usage: pass <encrypted_key_file> <passwords_file> [precalculated_no_of_passwords]
     """
 
     System.halt 0
@@ -31,5 +32,9 @@ defmodule Pass.CLI do
 
   def process({encrypted_key_file, passwords_file}) do
     Pass.BruteForce.run(encrypted_key_file, passwords_file)
+  end
+
+  def process({encrypted_key_file, passwords_file, num_passwords}) do
+    Pass.BruteForce.run(encrypted_key_file, passwords_file, num_passwords)
   end
 end

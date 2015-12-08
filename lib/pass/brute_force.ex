@@ -1,8 +1,8 @@
 defmodule Pass.BruteForce do
-  def run(encrypted_filename, passwords_file) do
+  def run(encrypted_filename, passwords_file, num_passwords \\ nil) do
     encrypted_contents = File.read! encrypted_filename
 
-    total_passwords = num_passwords_from(passwords_file)
+    total_passwords = num_passwords || num_passwords_from(passwords_file)
     IO.puts "Total passwords: #{total_passwords}"
 
     try do
@@ -42,7 +42,7 @@ defmodule Pass.BruteForce do
 
     case result do
       {:ok, contents} -> exit({:password, password, :contents, contents})
-      {:error, _}     -> IO.puts "Wrong: #{password}"
+      {:error, _}     -> nil && IO.puts "Wrong: #{password}"
     end
   end
 end
