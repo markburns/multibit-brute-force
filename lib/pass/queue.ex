@@ -13,6 +13,14 @@ defmodule Queue do
     GenServer.call(Queue, :dequeue)
   end
 
+  def length do
+    GenServer.call(Queue, :length)
+  end
+
+  def handle_call(:length, _from, state) do
+    {:reply, length(state), state}
+  end
+
   # Callbacks
   def handle_call(:dequeue, _from, state) do
     last = List.last(state)
@@ -20,6 +28,7 @@ defmodule Queue do
   end
 
   def handle_cast({:enqueue, item}, state) do
+    IO.puts "adding #{inspect item} to queue"
     {:noreply, [item|state]}
   end
 end

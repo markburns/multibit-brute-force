@@ -6,7 +6,7 @@ defmodule Pass.DecryptionConsumer do
   end
 
   def init _args do
-    spawn loop
+    spawn_link fn -> loop end
 
     {:ok, {}}
   end
@@ -16,17 +16,19 @@ defmodule Pass.DecryptionConsumer do
 
     case  result do
       {:error, error} -> IO.inspect error   ; exit(-2)
-      nil             -> nil && IO.puts("sleeping #{inspect self}"); :timer.sleep(100) ; loop
-      payload         -> consume(payload)   ; loop
+      nil             -> nil && IO.puts("sleeping #{inspect self}"); :timer.sleep(100)
+      payload         -> consume(payload)
     end
+
+    loop
   end
 
   defp consume(payload) do
-    #IO.puts "consume method called with: payload: #{inspect payload}"
+    IO.puts "consume method called with: payload: #{inspect payload}"
 
     case try_password({payload.encrypted_contents, payload.password}) do
       {:ok,     result} -> found(payload, result)
-      {:error, details} -> nil && IO.puts "invalid password #{details}"
+      {:error, details} -> IO.puts "invalid password #{details}"
     end
   end
 

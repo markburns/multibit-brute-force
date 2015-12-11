@@ -8,28 +8,32 @@ defmodule Pass.BruteForce do
   def run(encrypted_filename, passwords_file, found_output_file, password_file_length \\ nil) do
     num_passwords = password_file_length || num_passwords_from(passwords_file)
 
-    case Pass.ConsumerSupervisor.start do
-      {:ok, _} -> process(passwords_file, encrypted_filename, found_output_file, num_passwords)
-      _ -> {:error, "No valid password found"}
-    end
+    {:ok, _} = Pass.ConsumerSupervisor.start
+
+    process(passwords_file, encrypted_filename, found_output_file, num_passwords)
   end
 
-  def process(passwords_file, encrypted_filename, found_output_file, num_passwords) do
-    start_time = Date.now
+  defp process(passwords_file, encrypted_filename, found_output_file, num_passwords) do
+    start_time         = Date.local
     encrypted_contents = File.read! encrypted_filename
+
     File.stream!(passwords_file, [])
     |> Stream.map(&(String.rstrip(&1)))
     |> Stream.with_index
-    #|> Enum.map(&(display("password: #{ &1}")))
+    #|> Enum.map(&(display(&1)))
     |> Enum.map(&(add_to_queue(encrypted_contents, &1, found_output_file, num_passwords, start_time)))
 
     {:ok, "finished"}
   end
 
-  def add_to_queue(encrypted_contents, {element, index}, found_output_file, total, start_time) do
-    if rem(index, 10) == 0 do
-      display_progress(element, index, total, start_time)
+  defp add_to_queue(encrypted_contents, {element, index}, found_output_file, total, start_time) do
+    if Queue.length > 1000 do
+      IO.puts "Queue greater than 1,000, sleeping..."
+      :timer.sleep 100
+      add_to_queue(encrypted_contents, {element, index}, found_output_file, total, start_time)
     end
+
+    display_progress(element, index, total, start_time)
 
     message = %{password: element, encrypted_contents: encrypted_contents, found_output_file: found_output_file}
     #IO.inspect "queuing MESSAGE: #{inspect message}"
@@ -53,8 +57,8 @@ defmodule Pass.BruteForce do
   end
 
   defp time_diff_from(start_time) do
-    time_diff = Date.diff Date.now, start_time, :secs
-    time_diff = if time_diff == 0 do
+    time_diff = Date.diff Date.local, start_time, :secs
+    if time_diff == 0 do
       1
     else
       time_diff
@@ -69,18 +73,18 @@ defmodule Pass.BruteForce do
     end
     diff = Time.to_timestamp((100.0 * seconds_per_percent), :secs)
 
-    Date.now
+    Date.local
     |> Date.add(diff)
     |> DateFormat.format!("%H:%M:%S, %a, %d %b %Y", :strftime)
   end
 
-  def display(i) do
-    IO.inspect i
+  defp display(i) do
+    IO.puts inspect i
     i
   end
 
   defp num_passwords_from(f) do
-    IO.puts "calculating total number of passwords..."
+    #IO.puts "calculating total number of passwords..."
 
     System.cmd("wc", [f]) |> _extract_number_from_wc
   end
@@ -91,7 +95,7 @@ defmodule Pass.BruteForce do
     |> String.to_integer
   end
 
-  def line_count_from(columns) do
+  defp line_count_from(columns) do
     Enum.at columns, 1
   end
 end
