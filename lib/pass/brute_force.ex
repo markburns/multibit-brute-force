@@ -5,8 +5,8 @@ defmodule Pass.BruteForce do
     Application.stop(ConsumerSupervisor)
   end
 
-  def run(encrypted_filename, passwords_file, found_output_file, num_passwords \\ nil) do
-    num_passwords = num_passwords || num_passwords_from(passwords_file)
+  def run(encrypted_filename, passwords_file, found_output_file, password_file_length \\ nil) do
+    num_passwords = password_file_length || num_passwords_from(passwords_file)
 
     case Pass.ConsumerSupervisor.start do
       {:ok, _} -> process(passwords_file, encrypted_filename, found_output_file, num_passwords)
@@ -15,12 +15,11 @@ defmodule Pass.BruteForce do
   end
 
   def process(passwords_file, encrypted_filename, found_output_file, num_passwords) do
-    start_time = Date.now(:secs)
+    start_time = Date.now
     encrypted_contents = File.read! encrypted_filename
     File.stream!(passwords_file, [])
     |> Stream.map(&(String.rstrip(&1)))
     |> Stream.with_index
-    |> Stream.map(&display(&1))
     #|> Enum.map(&(display("password: #{ &1}")))
     |> Enum.map(&(add_to_queue(encrypted_contents, &1, found_output_file, num_passwords, start_time)))
 
@@ -28,7 +27,7 @@ defmodule Pass.BruteForce do
   end
 
   def add_to_queue(encrypted_contents, {element, index}, found_output_file, total, start_time) do
-    if rem(index, 1000) == 0 do
+    if rem(index, 10) == 0 do
       display_progress(element, index, total, start_time)
     end
 
@@ -38,29 +37,41 @@ defmodule Pass.BruteForce do
     Queue.enqueue message
   end
 
-  defp display_progress(el, index, total, start_time) do
-    if rem(index, 1000) == 0 do
-      IO.puts inspect el
-      IO.puts "#{index} / #{total}"
-      percent = 100.0 * index / total
 
-      IO.puts inspect el
+  defp display_progress(el, index, total, start_time) do
+    if (rem(index, 1000) == 0) do
+      IO.puts "trying password: #{inspect el}"
       IO.puts "completed: #{index} / #{total}"
+
+      percent = 100.0 * index / total
       IO.puts "#{inspect percent}%"
 
-      now = Date.now(:secs)
-      time_diff = now - start_time
+      time_diff = time_diff_from(start_time)
 
-      if time_diff > 0 do
-        IO.puts time_diff
-
-        percent_per_second = percent / time_diff
-        eta = now + (100.0 / percent_per_second)
-        formatted_date = eta |> DateFormat.format("%a, %d %b %Y %H:%M:%S", :strftime)
-
-        IO.puts "ETA: #{formatted_date}"
-      end
+      IO.puts "ETA: #{formatted_date(percent, time_diff)}"
     end
+  end
+
+  defp time_diff_from(start_time) do
+    time_diff = Date.diff Date.now, start_time, :secs
+    time_diff = if time_diff == 0 do
+      1
+    else
+      time_diff
+    end
+  end
+
+  defp formatted_date percent, time_diff do
+    seconds_per_percent = if percent == 0 do
+      0
+    else
+      time_diff / percent
+    end
+    diff = Time.to_timestamp((100.0 * seconds_per_percent), :secs)
+
+    Date.now
+    |> Date.add(diff)
+    |> DateFormat.format!("%H:%M:%S, %a, %d %b %Y", :strftime)
   end
 
   def display(i) do

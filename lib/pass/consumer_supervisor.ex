@@ -8,7 +8,7 @@ defmodule Pass.ConsumerSupervisor do
   def init(:ok) do
     {:ok, _} = Queue.start_link([])
 
-    children = Enum.map 1..100, &(create_worker(&1))
+    children = Enum.map 1..10_000, &(create_worker(&1))
 
     result = supervise(children, strategy: :one_for_one)
     #IO.puts "supervise children #{inspect children}"

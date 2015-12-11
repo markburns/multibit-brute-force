@@ -31,10 +31,10 @@ defmodule Pass.CLI do
   end
 
   def process({encrypted_key_file, passwords_file}) do
-    Pass.BruteForce.run(encrypted_key_file, passwords_file)
+    Pass.BruteForce.run(encrypted_key_file, passwords_file, "recovered.key")
   end
 
   def process({encrypted_key_file, passwords_file, num_passwords}) do
-    Pass.BruteForce.run(encrypted_key_file, passwords_file, num_passwords)
+    Pass.BruteForce.run(encrypted_key_file, passwords_file, "recovered.key", num_passwords)
   end
 end

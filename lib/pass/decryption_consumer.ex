@@ -6,20 +6,18 @@ defmodule Pass.DecryptionConsumer do
   end
 
   def init _args do
-    loop
+    spawn loop
 
     {:ok, {}}
   end
 
   def loop do
-    spawn fn ->
-      result = Queue.dequeue
+    result = Queue.dequeue
 
-      case  result do
-        nil             -> :timer.sleep(200) ; loop
-        {:error, error} -> IO.inspect error   ; exit(-2)
-        payload         -> consume(payload)   ; loop
-      end
+    case  result do
+      {:error, error} -> IO.inspect error   ; exit(-2)
+      nil             -> nil && IO.puts("sleeping #{inspect self}"); :timer.sleep(100) ; loop
+      payload         -> consume(payload)   ; loop
     end
   end
 
