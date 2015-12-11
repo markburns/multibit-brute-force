@@ -6,9 +6,11 @@ defmodule Pass.BruteForce do
   end
 
   def run(encrypted_filename, passwords_file, found_output_file, password_file_length \\ nil) do
+    stop
     num_passwords = password_file_length || num_passwords_from(passwords_file)
 
-    {:ok, _} = Pass.ConsumerSupervisor.start
+    Pass.ConsumerSupervisor.start
+
 
     process(passwords_file, encrypted_filename, found_output_file, num_passwords)
   end
@@ -42,17 +44,14 @@ defmodule Pass.BruteForce do
   end
 
 
-  defp display_progress(el, index, total, start_time) do
-    if (rem(index, 1000) == 0) do
-      IO.puts "trying password: #{inspect el}"
-      IO.puts "completed: #{index} / #{total}"
+  defp display_progress(_el, index, total, start_time) do
+    if index > 0 && (rem(index, 1000) == 0) do
+      #IO.puts "trying password: #{inspect el}"
 
       percent = 100.0 * index / total
-      IO.puts "#{inspect percent}%"
-
       time_diff = time_diff_from(start_time)
 
-      IO.puts "ETA: #{formatted_date(percent, time_diff)}"
+      IO.puts "(#{index}/#{total}) #{inspect percent}%  ETA: #{formatted_date(percent, time_diff)}"
     end
   end
 
@@ -78,10 +77,10 @@ defmodule Pass.BruteForce do
     |> DateFormat.format!("%H:%M:%S, %a, %d %b %Y", :strftime)
   end
 
-  defp display(i) do
-    IO.puts inspect i
-    i
-  end
+  #defp _display(i) do
+  #  IO.puts inspect i
+  #  i
+  #end
 
   defp num_passwords_from(f) do
     #IO.puts "calculating total number of passwords..."
