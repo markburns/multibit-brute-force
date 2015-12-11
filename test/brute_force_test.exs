@@ -23,7 +23,7 @@ defmodule BruteForceTest do
 
     :timer.sleep 800
     recovered_contents = File.read! @recovered_filename
-    assert recovered_contents == "Found password\n{:password, \"password\", :contents, \"KzRtRhGd5yXHM9XpPV4jHbnP8SNhTWuZqNNRftMyEoXtgLCworcR 2015-11-30T11:23:08Z\\n\"}\n%{encrypted_contents: \"U2FsdGVkX19d7Uf6KHyMyAdbSkNiaqwA7o6LT5hhe45i+bv1v6lT1xiUEhhWs30QzKzHm4ooqT0x\\r\\nKOeB9aQcQBVJ8QRRp+iycWimKJ72tAKiczcQf6BzYLkmxPsKJYw5\\r\\n\", found_output_file: \"tmp/recovered.key\", password: \"password\"}"
+    assert recovered_contents == "password\nKzRtRhGd5yXHM9XpPV4jHbnP8SNhTWuZqNNRftMyEoXtgLCworcR 2015-11-30T11:23:08Z\n"
   end
 
   test "with no valid passwords, it doesn't save the file" do

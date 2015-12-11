@@ -11,7 +11,6 @@ defmodule Pass.ConsumerSupervisor do
     {cores, 0} = System.cmd("sysctl", ["-n", "hw.ncpu"]) 
 
     cores = cores|> String.rstrip |> String.to_integer
-    #cores = 10_000
     children = Enum.map 1..cores, &(create_worker(&1))
 
     result = supervise(children, strategy: :one_for_one)

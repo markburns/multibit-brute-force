@@ -28,7 +28,6 @@ defmodule Queue do
   end
 
   def handle_cast({:enqueue, item}, state) do
-    IO.puts "adding #{inspect item} to queue"
     {:noreply, [item|state]}
   end
 end

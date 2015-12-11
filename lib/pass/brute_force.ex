@@ -19,82 +19,60 @@ defmodule Pass.BruteForce do
     start_time         = Date.local
     encrypted_contents = File.read! encrypted_filename
 
+    message = %{
+      password:           nil,
+      index:              nil,
+      total:              num_passwords,
+      start_time:         start_time,
+      encrypted_contents: encrypted_contents,
+      found_output_file:  found_output_file
+    }
+
     File.stream!(passwords_file, [])
     |> Stream.map(&(String.rstrip(&1)))
     |> Stream.with_index
     #|> Enum.map(&(display(&1)))
-    |> Enum.map(&(add_to_queue(encrypted_contents, &1, found_output_file, num_passwords, start_time)))
+    |> Enum.map(&(add_to_queue(&1, message)))
 
     {:ok, "finished"}
   end
 
-  defp add_to_queue(encrypted_contents, {element, index}, found_output_file, total, start_time) do
-    if Queue.length > 1000 do
-      IO.puts "Queue greater than 1,000, sleeping..."
-      :timer.sleep 100
-      add_to_queue(encrypted_contents, {element, index}, found_output_file, total, start_time)
-    end
+  defp add_to_queue({password, index}, message) do
+    message = %{message | password: password, index: index }
 
-    display_progress(element, index, total, start_time)
-
-    message = %{password: element, encrypted_contents: encrypted_contents, found_output_file: found_output_file}
-    #IO.inspect "queuing MESSAGE: #{inspect message}"
-
-    Queue.enqueue message
+    add_to_queue(message)
   end
 
-
-  defp display_progress(_el, index, total, start_time) do
-    if index > 0 && (rem(index, 1000) == 0) do
-      #IO.puts "trying password: #{inspect el}"
-
-      percent = 100.0 * index / total
-      time_diff = time_diff_from(start_time)
-
-      IO.puts "(#{index}/#{total}) #{inspect percent}%  ETA: #{formatted_date(percent, time_diff)}"
-    end
-  end
-
-  defp time_diff_from(start_time) do
-    time_diff = Date.diff Date.local, start_time, :secs
-    if time_diff == 0 do
-      1
+  defp add_to_queue(message) do
+    if Queue.length > 100_000 do
+      IO.puts "Queue greater than 100,000, sleeping..."
+      :timer.sleep 1000
+      add_to_queue(message)
     else
-      time_diff
+      #IO.inspect "queuing MESSAGE: #{inspect message}"
+      Queue.enqueue message
     end
   end
 
-  defp formatted_date percent, time_diff do
-    seconds_per_percent = if percent == 0 do
-      0
-    else
-      time_diff / percent
-    end
-    diff = Time.to_timestamp((100.0 * seconds_per_percent), :secs)
-
-    Date.local
-    |> Date.add(diff)
-    |> DateFormat.format!("%H:%M:%S, %a, %d %b %Y", :strftime)
-  end
 
   #defp _display(i) do
-  #  IO.puts inspect i
-  #  i
-  #end
+    #  IO.puts inspect i
+    #  i
+    #end
 
-  defp num_passwords_from(f) do
-    #IO.puts "calculating total number of passwords..."
+    defp num_passwords_from(f) do
+      #IO.puts "calculating total number of passwords..."
 
-    System.cmd("wc", [f]) |> _extract_number_from_wc
-  end
+      System.cmd("wc", [f]) |> _extract_number_from_wc
+    end
 
-  defp _extract_number_from_wc({item, _}) do
-    String.split(item, ~r/\s+/)
-    |> line_count_from
-    |> String.to_integer
-  end
+    defp _extract_number_from_wc({item, _}) do
+      String.split(item, ~r/\s+/)
+      |> line_count_from
+      |> String.to_integer
+    end
 
-  defp line_count_from(columns) do
-    Enum.at columns, 1
-  end
+    defp line_count_from(columns) do
+      Enum.at columns, 1
+    end
 end
