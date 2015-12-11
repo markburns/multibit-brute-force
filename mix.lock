@@ -14,5 +14,5 @@
   "rabbit_common": {:hex, :rabbit_common, "3.5.6"},
   "rncryptor": {:git, "git://github.com/RNCryptor/RNCryptor-erlang.git", "1f6da88b4d2e4f7a49eb4256be43e1a91aa7004a", []},
   "ssl_verify_hostname": {:hex, :ssl_verify_hostname, "1.0.5"},
-  "timex": {:hex, :timex, "1.0.0-rc3"},
-  "tzdata": {:hex, :tzdata, "0.5.5"}}
+  "timex": {:hex, :timex, "1.0.0-rc4"},
+  "tzdata": {:hex, :tzdata, "0.1.8"}}

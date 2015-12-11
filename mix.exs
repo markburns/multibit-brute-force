@@ -37,8 +37,9 @@ defmodule Pass.Mixfile do
   defp deps do
     [
       {:amqp,      "~> 0.1.4"},
-      { :jsx,      "~> 2.0" },
-      {:timex,     "~> 1.0.0-rc3"},
+      {:jsx,      "~> 2.0" },
+      {:tzdata, "== 0.1.8", override: true},
+      {:timex,     "~> 1.0.0-rc4"},
       {:httpoison, "~> 0.8.0"},
     ]
   end
