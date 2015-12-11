@@ -2,21 +2,31 @@ defmodule BruteForceTest do
   use ExUnit.Case
 
   import Pass.BruteForce, only: [
-    run: 2,
+    run: 3,
   ]
 
-  @tag :pending
-  test "with a valid password, it recovers the key file" do
-    {:ok, recovered_contents} = run("test/support/empty-with-password.key", "test/support/with_valid_password.lst")
-    assert recovered_contents == "KzRtRhGd5yXHM9XpPV4jHbnP8SNhTWuZqNNRftMyEoXtgLCworcR 2015-11-30T11:23:08Z\n"
+  @recovered_filename "tmp/recovered.key"
+
+  setup do
+    File.rm(@recovered_filename)
+    Pass.BruteForce.stop
+    :ok
   end
 
-  test "with no valid passwords" do
-    {:error, message} = run(
+  test "with a valid password, it recovers the key file" do
+    run("test/support/empty-with-password.key", "test/support/with_valid_password.lst", @recovered_filename )
+    :timer.sleep 800
+    recovered_contents = File.read! @recovered_filename
+    assert recovered_contents == "Found password\n{:password, \"password\", :contents, \"KzRtRhGd5yXHM9XpPV4jHbnP8SNhTWuZqNNRftMyEoXtgLCworcR 2015-11-30T11:23:08Z\\n\"}\n%{encrypted_contents: \"U2FsdGVkX19d7Uf6KHyMyAdbSkNiaqwA7o6LT5hhe45i+bv1v6lT1xiUEhhWs30QzKzHm4ooqT0x\\r\\nKOeB9aQcQBVJ8QRRp+iycWimKJ72tAKiczcQf6BzYLkmxPsKJYw5\\r\\n\", found_output_file: \"tmp/recovered.key\", password: \"password\"}"
+  end
+
+  test "with no valid passwords, it doesn't save the file" do
+    run(
       "test/support/empty-with-password.key",
-      "test/support/invalid_password.lst"
+      "test/support/invalid_password.lst",
+      @recovered_filename
     )
 
-    assert message == "No valid password found"
+    {:error, :enoent} = File.read @recovered_filename
   end
 end

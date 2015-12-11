@@ -15,9 +15,13 @@ defmodule Pass.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger,
-        #   :tzdata
-      ]]
+    [applications: [
+        :logger,
+        :jsx,
+        :amqp,
+        :httpoison
+      ]
+    ]
   end
 
   # Dependencies can be Hex packages:
@@ -30,8 +34,12 @@ defmodule Pass.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [{:concrypt, git: "git://github.com/stocks29/concrypt.git"},
-      {:timex, "~> 1.0.0-rc3"}]
+    [
+      {:amqp,      "~> 0.1.4"},
+      { :jsx,      "~> 2.0" },
+      {:timex,     "~> 1.0.0-rc3"},
+      {:httpoison, "~> 0.8.0"},
+    ]
   end
 
   defp escript_config do
