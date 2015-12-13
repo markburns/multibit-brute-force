@@ -1,62 +1,68 @@
 defmodule Pass.BruteForce do
+  require Logger
   use Timex
+  @limit 5
 
   def stop do
     Application.stop(ConsumerSupervisor)
   end
 
   def run(encrypted_filename, passwords_file, found_output_file, password_file_length \\ nil) do
+    Logger.info "Brute Force Started"
     stop
+    spawn_link fn -> Pass.ConsumerSupervisor.start end
+
     num_passwords = password_file_length || num_passwords_from(passwords_file)
 
-    Pass.ConsumerSupervisor.start
-
-
-    process(passwords_file, encrypted_filename, found_output_file, num_passwords)
-  end
-
-  defp process(passwords_file, encrypted_filename, found_output_file, num_passwords) do
     start_time         = Date.local
     encrypted_contents = File.read! encrypted_filename
 
     message = %{
+      encrypted_contents: encrypted_contents,
+      found_output_file:  found_output_file,
       password:           nil,
       index:              nil,
       total:              num_passwords,
-      start_time:         start_time,
-      encrypted_contents: encrypted_contents,
-      found_output_file:  found_output_file
+      start_time:         start_time
     }
 
-    File.stream!(passwords_file, [])
-    |> Stream.map(&(String.rstrip(&1)))
-    |> Stream.with_index
-    #|> Enum.map(&(display(&1)))
-    |> Enum.map(&(add_to_queue(&1, message)))
+    process(passwords_file, message)
 
     {:ok, "finished"}
   end
 
+  defp process(passwords_file, message) do
+    File.stream!(passwords_file, [])
+    |> Stream.map(&(String.rstrip(&1)))
+    |> Stream.with_index
+    |> Enum.map(&(add_to_queue(&1, message)))
+  end
+
   defp add_to_queue({password, index}, message) do
     message = %{message | password: password, index: index }
+    #IO.puts "MESSAGE: #{inspect message}"
 
     add_to_queue(message)
   end
 
   defp add_to_queue(message) do
-    if Queue.length > 100_000 do
-      IO.puts "Queue greater than 100,000, sleeping..."
-      :timer.sleep 1000
-      add_to_queue(message)
+    if (len = Queue.length) > @limit do
+      Logger.info "Queue length: (#{len}) greater than #{@limit}, sleeping... item: #{message.index}"
+
+      receive do
+      after
+        1_000 -> add_to_queue(message)
+      end
+
     else
-      #IO.inspect "queuing MESSAGE: #{inspect message}"
+      #Logger.debug "queuing MESSAGE: #{inspect message}"
       Queue.enqueue message
     end
   end
 
 
   #defp _display(i) do
-    #  IO.puts inspect i
+    #  Logger.debug inspect i
     #  i
     #end
 

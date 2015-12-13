@@ -1,13 +1,33 @@
 defmodule Pass.Progress do
+  use Timex
+  use GenServer
+
+  def start do
+    Application.stop(Progress)
+    GenServer.start_link(__MODULE__, nil, name: Progress)
+  end
+
   def display(message) do
-    if message.index > 0 && (rem(message.index, 1000) == 0) do
+    GenServer.cast(Progress, {:display, message})
+  end
+
+  def handle_cast({:display, message}, state) do
+    _display message
+
+    {:noreply, state}
+  end
+
+  NIF
+  defp _display(message) do
+    #if message.index > 0 && (rem(message.index, 1000) == 0) do
       #IO.puts "trying password: #{inspect message.password}"
+      #IO.puts "queue length: #{Queue.length}"
 
       percent = 100.0 * message.index / message.total
       time_diff = time_diff_from(message.start_time)
 
       IO.puts "(#{message.index}/#{message.total}) #{inspect percent}%  ETA: #{formatted_date(percent, time_diff)}"
-    end
+      #end
   end
 
   defp time_diff_from(start_time) do

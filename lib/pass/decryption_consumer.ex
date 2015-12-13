@@ -1,5 +1,6 @@
 defmodule Pass.DecryptionConsumer do
   use GenServer
+  require Logger
 
   def start_link do
     GenServer.start_link(__MODULE__, [], [])
@@ -16,7 +17,7 @@ defmodule Pass.DecryptionConsumer do
 
     case  result do
       {:error, error} -> IO.inspect error   ; exit(-2)
-      nil             -> nil && IO.puts("sleeping #{inspect self}"); :timer.sleep(10)
+      nil             -> Logger.debug("Queue empty: #{__MODULE__} sleeping"); receive do after 200 -> nil end
       payload         -> consume(payload)
     end
 
@@ -24,7 +25,7 @@ defmodule Pass.DecryptionConsumer do
   end
 
   defp consume(payload) do
-    #IO.puts "consume method called with: payload: #{inspect payload}"
+    Logger.error "consuming #{inspect payload}"
     Pass.Progress.display(payload)
 
     case try_password({payload.encrypted_contents, payload.password}) do

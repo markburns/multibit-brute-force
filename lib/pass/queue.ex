@@ -1,5 +1,6 @@
 defmodule Queue do
   use GenServer
+  require Logger
 
   def start_link(default) do
     GenServer.start_link(__MODULE__, default, name: Queue)
@@ -18,13 +19,19 @@ defmodule Queue do
   end
 
   def handle_call(:length, _from, state) do
+    len = length(state)
+    Logger.error "calling length: #{len}"
     {:reply, length(state), state}
   end
 
   # Callbacks
   def handle_call(:dequeue, _from, state) do
+    Logger.error "DEQUEUEING"
     last = List.last(state)
-    {:reply, last, List.delete(state, last)}
+    state = List.delete(state, last)
+    result = {:reply, last, state}
+    Logger.error "DEQUEUED #{length state}"
+    result
   end
 
   def handle_cast({:enqueue, item}, state) do

@@ -15,13 +15,16 @@ defmodule BruteForceTest do
   end
 
   test "with a valid password, it recovers the key file" do
-    run(
-    "test/support/empty-with-password.key",
-    "test/support/with_valid_password.lst",
-    @recovered_filename
-    )
+    spawn_link fn -> 
+      run(
+      "test/support/empty-with-password.key",
+      "test/support/with_valid_password.lst",
+      @recovered_filename
+      )
+    end
 
-    :timer.sleep 800
+    :timer.sleep 4000
+
     recovered_contents = File.read! @recovered_filename
     assert recovered_contents == "password\nKzRtRhGd5yXHM9XpPV4jHbnP8SNhTWuZqNNRftMyEoXtgLCworcR 2015-11-30T11:23:08Z\n"
   end
