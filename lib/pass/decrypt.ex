@@ -1,4 +1,6 @@
 defmodule Pass.Decrypt do
+  use Timex
+
   def run(encrypted_contents, password) do
     case Pass.KeyAndIvGenerator.run(encrypted_contents, password) do
       {_, key, iv, encrypted} -> decrypt(key, iv, encrypted)
@@ -10,7 +12,7 @@ defmodule Pass.Decrypt do
   end
 
   def decrypt(key, iv, encrypted) do
-    result = unpad(:crypto.aes_cbc_256_decrypt(key, iv, encrypted))
+    result = unpad(:crypto.block_decrypt(:aes_cbc256, key, iv, encrypted))
 
     check result
   rescue

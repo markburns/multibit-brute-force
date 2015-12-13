@@ -1,12 +1,13 @@
 defmodule Pass.DecryptionConsumer do
   use GenServer
+  require Logger
 
   def start_link do
     GenServer.start_link(__MODULE__, [], [])
   end
 
   def init _args do
-    spawn loop
+    spawn_link fn -> loop end
 
     {:ok, {}}
   end
@@ -16,13 +17,16 @@ defmodule Pass.DecryptionConsumer do
 
     case  result do
       {:error, error} -> IO.inspect error   ; exit(-2)
-      nil             -> nil && IO.puts("sleeping #{inspect self}"); :timer.sleep(100) ; loop
-      payload         -> consume(payload)   ; loop
+      nil             -> Logger.debug("Queue empty: #{__MODULE__} sleeping"); receive do after 200 -> nil end
+      payload         -> consume(payload)
     end
+
+    loop
   end
 
   defp consume(payload) do
-    #IO.puts "consume method called with: payload: #{inspect payload}"
+    Logger.error "consuming #{inspect payload}"
+    Pass.Progress.display(payload)
 
     case try_password({payload.encrypted_contents, payload.password}) do
       {:ok,     result} -> found(payload, result)
@@ -31,10 +35,8 @@ defmodule Pass.DecryptionConsumer do
   end
 
   def found payload, result do
-    #IO.puts "saving to #{inspect payload.found_output_file}"
-
-    contents =  "Found password\n#{inspect result}\n#{inspect payload}"
-    File.write payload.found_output_file, contents
+    body = "#{payload.password}\n#{result.contents}"
+    File.write payload.found_output_file, body
   end
 
   def try_password({encrypted_contents, password}) do
@@ -42,7 +44,7 @@ defmodule Pass.DecryptionConsumer do
     #IO.puts "Decrypt result #{inspect result}"
 
     case result do
-      {:ok, contents}   -> IO.puts "found password: #{password}"; {:ok, {:password, password, :contents, contents}}
+      {:ok, contents}   -> IO.puts "found password: #{password}"; {:ok, %{password: password, contents: contents}}
       {:error, message} -> {:error, message}
     end
   end

@@ -1,5 +1,6 @@
 %{"amqp": {:hex, :amqp, "0.1.4"},
   "amqp_client": {:hex, :amqp_client, "3.5.6"},
+  "benchfella": {:hex, :benchfella, "0.3.0"},
   "certifi": {:hex, :certifi, "0.3.0"},
   "combine": {:hex, :combine, "0.6.0"},
   "concrypt": {:git, "git://github.com/stocks29/concrypt.git", "8ebd9c0da8fb3748dd3a7894e1a013c1ae2bc9fc", []},
@@ -14,5 +15,5 @@
   "rabbit_common": {:hex, :rabbit_common, "3.5.6"},
   "rncryptor": {:git, "git://github.com/RNCryptor/RNCryptor-erlang.git", "1f6da88b4d2e4f7a49eb4256be43e1a91aa7004a", []},
   "ssl_verify_hostname": {:hex, :ssl_verify_hostname, "1.0.5"},
-  "timex": {:hex, :timex, "1.0.0-rc3"},
-  "tzdata": {:hex, :tzdata, "0.5.5"}}
+  "timex": {:hex, :timex, "1.0.0-rc4"},
+  "tzdata": {:hex, :tzdata, "0.1.8"}}
